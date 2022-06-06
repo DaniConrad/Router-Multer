@@ -4,23 +4,15 @@ const fs = require('fs')
     constructor(object = {}){
      this.name = object?.name || ''
      this.price = object?.price || ''
-     this.thumbnail = object?.thumbnail || ''
      this.db = [];
      this.readJson = JSON.parse(fs.readFileSync('./data.json', 'utf-8'))
     }
     
-    saveFile(){
-        const data = {
-            name: this.name,
-            price: this.price,
-            id: this.readJson.length+1,
-            thumbnail: this.thumbnail
-        }
+    saveFile(obj){
+        let db = [];
 
-        this.db.push(...this.readJson, data)
-        fs.writeFileSync('./data.json', JSON.stringify(this.db))
-
-        console.log(`El id asignado es ${data.id}`);
+        db.push(...this.readJson, obj)
+        fs.writeFileSync('./data.json', JSON.stringify(db))
         }
 
     getById(myId){
@@ -30,11 +22,24 @@ const fs = require('fs')
         return matchId == undefined ? {error: 'Producto no encontrado'} : matchId
         
     }
-
     deleteById(myId){
+            const matchId = this.readJson.filter((product)=> product.id != myId)
+            this.db.push(...matchId)
+
+            fs.writeFileSync('./data.json', JSON.stringify(this.db))
+        }
+
+    editById(myId, name, price){ 
         const matchId = this.readJson.filter((product)=> product.id != myId)
         this.db.push(...matchId)
-
+        fs.writeFileSync('./data.json', JSON.stringify(this.db))
+        
+        const data = {
+             id: myId,
+             name: name,
+             price: price
+        }
+        this.db.push(data)
         fs.writeFileSync('./data.json', JSON.stringify(this.db))
     }
 

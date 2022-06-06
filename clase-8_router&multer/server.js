@@ -14,18 +14,6 @@ app.use('/api/products', router)
 
 const PORT = 8080
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) =>{
-        cb(null, 'public')
-    },
-    filename: (req, file, cb) =>{
-        const time = Date.now()
-        cb(null, time + '-' + file.originalname)
-    },
-})
-
-const upload = multer({storage})
-
 router.get('/', (req, res) =>{
     const data = dataBase.getAll()
     res.json(data)
@@ -35,6 +23,7 @@ router.get(`/:id`, (req, res) =>{
     const myId = Number(req.params.id)
     const dataId = dataBase.getById(myId)
     res.json(dataId)
+    
 })
 
 router.delete(`/:id`, (req, res) =>{
@@ -44,9 +33,26 @@ router.delete(`/:id`, (req, res) =>{
 })
 
 router.post('/', (req, res) =>{
-    const dataBase = new Container(req.body)
-    dataBase.saveFile()
-    res.send('saved')
+   const id = Number(dataBase.getAll().length+1)
+
+    const {name, price} = req.body
+    dataBase.saveFile({id, name, price})
+    res.send(`El id asignado es: ${id}`)
+
+})
+
+router.put(`/:id`, (req, res) => {
+    const data = dataBase.getAll()
+    const myId = Number(req.params.id)
+    
+    const checkStock = data.some((product)=> product.id === myId)
+    if (checkStock == true) {
+        const {name, price} = req.body
+        dataBase.editById(myId, name, price)
+        res.send(`El id ${myId} se modificó con éxito`)
+    } else {
+        res.status(404).send(`No se encontró el id ${myId}.`)
+    }
 })
 
 const server = app.listen(PORT, ()=>{
